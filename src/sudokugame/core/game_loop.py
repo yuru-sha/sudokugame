@@ -1,9 +1,9 @@
 import pygame
 import sys
 from ..game.sudoku_logic import SudokuGame
-from ..ui.renderer import GameRenderer
-from ..ui.difficulty_selector import DifficultySelector
-from .game_state import GameState
+from ..ui.screens.game_screen import GameScreen
+from ..ui.screens.menu_screen import MenuScreen
+from ..game.states.game_state import GameState
 from .constants import WINDOW_SIZE, BUTTON_HEIGHT, BUTTON_WIDTH
 
 class GameLoop:
@@ -16,18 +16,18 @@ class GameLoop:
         
         # コンポーネントの初期化
         self.game_state = GameState()
-        self.renderer = GameRenderer(self.screen, WINDOW_SIZE, BUTTON_HEIGHT)
-        self.difficulty_selector = DifficultySelector(self.screen)
+        self.game_screen = GameScreen(self.screen, WINDOW_SIZE, BUTTON_HEIGHT)
+        self.menu_screen = MenuScreen(self.screen)
         self.game = None
     
     def run(self):
         while True:
             if not self.game_state.in_game:
                 self.handle_menu_events()
-                self.difficulty_selector.draw()
+                self.menu_screen.draw()
             else:
                 self.handle_game_events()
-                self.renderer.draw_game(self.game, self.game_state)
+                self.game_screen.draw(self.game, self.game_state)
             
             pygame.display.flip()
     
@@ -37,7 +37,7 @@ class GameLoop:
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                difficulty = self.difficulty_selector.handle_click(event.pos)
+                difficulty = self.menu_screen.handle_click(event.pos)
                 if difficulty is not None:
                     self.game = SudokuGame(difficulty)
                     self.game_state.start_game(difficulty)
@@ -61,6 +61,7 @@ class GameLoop:
                             self.game_state.game_cleared = self.game.check_answer()
                     elif x >= BUTTON_WIDTH + 20:  # やめるボタン
                         self.game_state.return_to_menu()
+                        self.game = None
             
             elif event.type == pygame.KEYDOWN and self.game_state.selected and not self.game_state.game_cleared and not self.game_state.show_solution:
                 row, col = self.game_state.selected

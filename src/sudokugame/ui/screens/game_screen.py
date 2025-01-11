@@ -18,6 +18,9 @@ class GameScreen:
     
     def draw(self, game, game_state):
         """ゲーム画面を描画する"""
+        if not game or not game_state:
+            return
+            
         self.screen.fill(WHITE)
         self._draw_grid()
         self._draw_numbers(game, game_state)
